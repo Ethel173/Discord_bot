@@ -1,0 +1,4 @@
+CLIENT_ID = <application id>
+GUILD_ID = <unused for now>
+DISCORD_TOKEN = <private key here>
+DEBUG = <True/False>

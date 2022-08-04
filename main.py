@@ -1,26 +1,12 @@
-import re
 import discord
 import os
 import dotenv 
+from bot_message_handler import check_message_processor
 
 #load env flags
 dotenv.load_dotenv()
-
-
-scare_flag = False
-usertag_flag = False
 debug = bool(os.getenv('DEBUG'))
 bot_token = os.getenv('DISCORD_TOKEN')
-
-
-class bot_return_struct:
-    def __init__(self, string, userflag):
-        self.string = string
-        self.userflag = userflag
-    def rtr_resp(self):
-        return self.string
-    def rtr_flag(self):
-        return self.userflag
 
 class MyClient(discord.Client):
     async def on_ready(self):
@@ -37,58 +23,18 @@ class MyClient(discord.Client):
             if debug == True:
                 print('discarded self-message: {0.author}: {0.content}'.format(message))
             return
-        p2 = reply_bot_message(self, message)
-        p3 = p2.rtr_resp()
-        p4 = p2.rtr_flag()
-        await message.reply(p3, mention_author=p4)
-        await message.add_reaction(emoji ='🇫')
-
-
-
-
-
-def reply_bot_message(self, message):
-    bot_reply = ''
-    global scare_flag
-    global usertag_flag
-    usertag_flag = False
-    action_flag = 0
-    if debug == True:
-        print('processing {0.author}: {0.content} '.format(message))
-        
-    #alis for cleaner reading
-    intake = message.content
-
-    if intake.isupper():
-        bot_reply = bot_reply + 'Please stop yelling at me its scawwy but '
-        usertag_flag = True
-        scare_flag = True
-    else:
-        if scare_flag == True:
-                bot_reply = bot_reply + 'Thankies and '
-                if debug == True:
-                    print("trip thank flag")
-                scare_flag = False
-
-    intake = message.content.lower()
-    if intake.startswith('hello'):
-        bot_reply = bot_reply + 'Hello!'
-        action_flag = 1
-    elif intake.startswith('googlefu') or intake.startswith('can the internet tell me why'):
-        if intake.startswith('can the internet tell me why'):
-            proc1 = re.search("(?<=can the internet tell me why ).*",intake)
-        else:
-            proc1 = re.search("(?<=googlefu ).*",intake)
-            bot_reply = bot_reply + 'https://www.google.com/search?q='+str(proc1[0]).replace(' ','+')
-        action_flag = 1
-
-    #failsale flag to return custom message, not needed but nice 
-    if action_flag == 1:
+        p2 = check_message_processor(self, message)
         if debug == True:
-            print("tried sending message: -" + str(bot_reply) + '- with UT_flag: -' + str(usertag_flag) +'-')
-        return bot_return_struct(bot_reply, usertag_flag)
-    #failsafe return false
-    return False
+            print('p2 = ',p2)
+        if p2 == False:
+            if debug == True:
+                print('no reply sent')
+            return
+        else:
+            await message.reply(p2.rtr_resp(), mention_author=p2.rtr_flag())
+        #await message.add_reaction(emoji ='🇫')
+
+
 
 
 client = MyClient()
