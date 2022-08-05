@@ -1,7 +1,7 @@
 import re
 import sys
 import discord
-from envflags import client_id,guild_id,bot_token,debug,home_channel
+from envflags import bot_token,debug,home_channel
 from utils import roll_random_in_array,psudo_list_rng
 #has to be up here for debug assignment
 #pythons built in bool(X) doesnt convert 'False' into False
@@ -20,11 +20,6 @@ current_game = ''
 
 #editable flavor text
 startup_statuses = ['crying over RNG','with the dev console','crashing this bot with no error logs','gao']
-#make sure to add in the ' ' for proper formatting for below
-google_search_keywords = ['googlefu ','can the internet tell me why ' ,'explain to me ']
-scared_responses = ['Please stop yelling at me its scawwy but ','Loud Noises scawwy but ','AAAHH ','awwwww you made me spill my drink ']
-un_scared_response = ['Thankies and ','thankuus ','ehe ']
-RNG_like_dislike = ['i hate ','i love ','i dont really like ','i enjoy ']
 
 
 class bot_return_struct:
@@ -67,6 +62,8 @@ class MyClient(discord.Client):
         command_match = ''
         #this is used later despite VS saying otherwise
         googlestorage = ''
+        google_search_keywords = ['googlefu ','can the internet tell me why ' ,'explain to me ']
+
         #debug
         if debug == True:
             print('caught message: {0.author}: {0.content}'.format(message))
@@ -85,17 +82,24 @@ class MyClient(discord.Client):
             command_match = 'googlefu'
         elif intake_lower.startswith('source me'):
             command_match='source'
+        #try do something with above commands
         if command_match != '':
             p2 = reply_bot_message(self, message, command_match)
             if debug == True:
                 print('p2 = ',p2)
             if p2 != False:
                 await message.reply(p2.rtr_resp(), mention_author=p2.rtr_flag())
+        #purge subroutine
+        elif intake_lower.startswith('purge '):
+            p1 = intake_lower.replace('purge ','')
+            await mass_del(self, p1, message)
 
     async def on_message_delete(self,message):
+        
         if message.author.id == self.user.id:
             return
-        else:
+            #dont fire in DMs
+        elif message.channel.type.value != 1:
             channel = client.get_channel(message.channel.id)
             await channel.send("i saw that")
 
@@ -115,7 +119,12 @@ def reply_bot_message(self, message, command):
     #intake = original conent(used in scare flag), lower for handling logic
     intake = message.content
     intake_lower = intake.lower()
-    
+    nsfw_flag = message.channel.category.nsfw
+    #make sure to add in the ' ' for proper formatting for below
+    scared_responses = ['Please stop yelling at me its scawwy but ','Loud Noises scawwy but ','AAAHH ','awwwww you made me spill my drink ']
+    un_scared_response = ['Thankies and ','thankuus ','ehe ']
+    RNG_like_dislike = ['i hate ','i love ','i dont really like ','i enjoy ']
+
     match command:
         case 'hw':
             bot_reply = bot_reply + 'Hello!'
@@ -159,6 +168,17 @@ def reply_bot_message(self, message, command):
         return bot_return_struct(bot_reply, yell_at_user_flag)
     #failsafe return false
     return False
+
+async def mass_del(self, number, message):
+    limit_a = int(number)
+    private_flag = message.channel.type.value
+    if private_flag == 1:
+        async for A in message.channel.history(limit=limit_a):
+            if A.author.id == self.user.id:
+                await A.delete()
+    else:
+        await message.channel.purge(limit=limit_a)
+
 
 def start_keyword_in_arr(input, search_arr):
     global googlestorage
