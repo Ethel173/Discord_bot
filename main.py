@@ -50,9 +50,8 @@ class MyClient(discord.Client):
     async def on_message(self, message):
         #prevent replies and logging of bot
         if message.author.id == self.user.id:
-            if debug == True:
-                print('discarded self-message: {0.author}: {0.content}'.format(message))
-                #print(str(message.channel.id))
+            '''if debug == True:
+                print('discarded self-message: {0.author}: {0.content}'.format(message))'''
             return
         global current_game
         #aliases
@@ -64,9 +63,21 @@ class MyClient(discord.Client):
         googlestorage = ''
         google_search_keywords = ['googlefu ','can the internet tell me why ' ,'explain to me ']
 
+
         #debug
         if debug == True:
             print('caught message: {0.author}: {0.content}'.format(message))
+
+        bot_talk_keywords = {
+            'hello':'hw',
+            'hey gura what do you think of ':'rng_like',
+            'source me':'source', 
+            'googlefu ':['googlefu ','googlefu'],
+            'can the internet tell me why ':['can the internet tell me why ','googlefu'],
+            'explain to me ':['explain to me ','googlefu'],
+            }
+        unpack_talk = unpack_keys(bot_talk_keywords)
+
 
         #start logic
         if message.content.startswith('hey gura change your game'):
@@ -74,28 +85,20 @@ class MyClient(discord.Client):
             psudo_rng = psudo_list_rng(startup_statuses,current_game)
             psudo_change_game = roll_random_in_array(psudo_rng)
             await client.change_presence(status=discord.Status.online, activity=discord.Game(psudo_change_game))
-        elif intake_lower.startswith('hello'):
-            command_match = 'hw'
-        elif intake_lower.startswith('hey gura what do you think of '):
-            command_match = 'rng_like'
-        elif start_keyword_in_arr(intake_lower, google_search_keywords):
-            command_match = 'googlefu'
-        elif intake_lower.startswith('source me'):
-            command_match='source'
-        #try do something with above commands
-        if command_match != '':
-            p2 = reply_bot_message(self, message, command_match)
-            if debug == True:
-                print('p2 = ',p2)
-            if p2 != False:
+        #chat events that return a response
+        for i in range(0,len(unpack_talk)):
+            if re.match(unpack_talk[i],intake_lower):
+                p2 = reply_bot_message(self, message, bot_talk_keywords[unpack_talk[i]])
                 await message.reply(p2.rtr_resp(), mention_author=p2.rtr_flag())
+                break
+
+
         #purge subroutine
-        elif intake_lower.startswith('purge '):
+        if intake_lower.startswith('purge '):
             p1 = intake_lower.replace('purge ','')
             await mass_del(self, p1, message)
 
     async def on_message_delete(self,message):
-        
         if message.author.id == self.user.id:
             return
             #dont fire in DMs
@@ -109,12 +112,17 @@ class MyClient(discord.Client):
 
 #self arg unused but may be used in future
 def reply_bot_message(self, message, command):
+    if type(command) == list:
+        extra_arg_1 = command[0]
+        command = command[1]
+
+
     bot_reply = ''
     global scare_flag
     global yell_at_user_flag
     yell_at_user_flag = False
-    if debug == True:
-        print('processing {0.author}: {0.content} '.format(message))
+    '''if debug == True:
+        print('processing {0.author}: {0.content} '.format(message))'''
     #alis for cleaner reading
     #intake = original conent(used in scare flag), lower for handling logic
     intake = message.content
@@ -132,7 +140,8 @@ def reply_bot_message(self, message, command):
             proc1 = intake_lower.replace('hey gura what do you think of ','')
             bot_reply = roll_random_in_array(RNG_like_dislike) + proc1
         case 'googlefu':
-            bot_reply = bot_reply + 'https://www.google.com/search?q='+str(googlestorage).replace(' ','+')
+            proc1 = intake_lower.replace(extra_arg_1,'')
+            bot_reply = bot_reply + 'https://www.google.com/search?q='+proc1.replace(' ','+')
         case 'source':
             attachemnt_number = len(message.attachments)
             if attachemnt_number == 0:
@@ -147,32 +156,24 @@ def reply_bot_message(self, message, command):
                     hunt = url.replace('http://','').replace('https://','')
                     bot_reply = bot_reply + 'am dumm, so heres google\n' +'https://www.google.com/searchbyimage?image_url='+str(hunt)+'\n'
 
-
-
-    if command != '':
-        #'yelling' flavor text in here to only process scare flags if actually responding to comething
-        #uses intake as alias for original message
-        if intake.isupper():
-            bot_reply = roll_random_in_array(scared_responses) + bot_reply
-            yell_at_user_flag = True
-            scare_flag = True
-        else:
-            if scare_flag == True:
-                    bot_reply = roll_random_in_array(un_scared_response) + bot_reply
-                    if debug == True:
-                        print("trip thank flag")
-                    scare_flag = False
-
-        if debug == True:
-            print("tried sending message: -" + str(bot_reply) + '- with UT_flag: -' + str(yell_at_user_flag) +'-')
-        return bot_return_struct(bot_reply, yell_at_user_flag)
-    #failsafe return false
-    return False
+    if intake.isupper():
+        bot_reply = roll_random_in_array(scared_responses) + bot_reply
+        yell_at_user_flag = True
+        scare_flag = True
+    else:
+        if scare_flag == True:
+                bot_reply = roll_random_in_array(un_scared_response) + bot_reply
+                '''if debug == True:
+                    print("trip thank flag")'''
+                scare_flag = False
+    '''if debug == True:
+        print("tried sending message: -" + str(bot_reply) + '- with UT_flag: -' + str(yell_at_user_flag) +'-')'''
+    return bot_return_struct(bot_reply, yell_at_user_flag)
 
 async def mass_del(self, number, message):
     limit_a = int(number)
-    private_flag = message.channel.type.value
-    if private_flag == 1:
+    #DMS or private groups
+    if message.channel.type.value == 1:
         async for A in message.channel.history(limit=limit_a):
             if A.author.id == self.user.id:
                 await A.delete()
@@ -180,17 +181,8 @@ async def mass_del(self, number, message):
         await message.channel.purge(limit=limit_a)
 
 
-def start_keyword_in_arr(input, search_arr):
-    global googlestorage
-    for i in search_arr:
-        #debug if this loop works properly
-        if debug == True:
-            print('checking for ',i)
-        if input.startswith(str(i)):
-            googlestorage = input.lower().replace(str(i),'')
-            return True
-
-
+def unpack_keys(dict):
+    return [*dict]
 
 client = MyClient()
 def starttime():
