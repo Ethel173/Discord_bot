@@ -1,4 +1,5 @@
-CLIENT_ID = <application id>
+CLIENT_ID = <application id, unused for now>
 GUILD_ID = <unused for now>
 DISCORD_TOKEN = <private key here>
 DEBUG = <True/False>
+HOME_CHANNEL = <a channel that the bot announces startup messages in, can be INT or empty>

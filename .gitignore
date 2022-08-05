@@ -1,4 +1,6 @@
 .env
-clippy
+clippy.txt
 test.py
-test_bot_message_handler.py
+test_other.py
+__pycache__/
+test_main.py
