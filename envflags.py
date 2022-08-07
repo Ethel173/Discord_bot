@@ -6,7 +6,7 @@ import dotenv
 
 #load env flags
 dotenv.load_dotenv()
-client_id = os.getenv('CLIENT_ID')
+bot_id = os.getenv('CLIENT_ID')
 guild_id = os.getenv('GUILD_ID')
 bot_token = os.getenv('DISCORD_TOKEN')
 debug = os.getenv('DEBUG')
