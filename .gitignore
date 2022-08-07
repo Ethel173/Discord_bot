@@ -3,7 +3,6 @@ clippy.txt
 test.py
 test_other.py
 __pycache__/
-test_main.py
 sandbox.py
 rewrite_nextcord/
 sandbox2.py

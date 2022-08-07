@@ -72,9 +72,7 @@ class MyClient(discord.Client):
         #start logic
         #chat events that return a response
         for cmd in range(len(cmd_list)):
-            alpha = cmd_list[cmd]
-            beta = alpha['trigger']
-            if type(beta) != list:
+            if type(cmd_list[cmd]['trigger']) != list:
                 if re.match(cmd_list[cmd]['trigger'],message.content.lower()):
                     if message.channel.type.value != 1:
                         if get_bot_perms(message).send_messages == False:
@@ -111,13 +109,12 @@ async def reply_bot_message(message, command,regex = ''):
         print('processing {0.author}: {0.content} '.format(message))
     #clear it for new response
     bot_reply = ''
-    #disabled for next major rewrite
     async def change_game():
         global bot_reply
         bot_reply = "im trying ok"
         psudo_rng = psudo_list_rng(startup_statuses,startup_status_current)
         psudo_change_game = roll_random_in_array(psudo_rng)
-        await change_game(psudo_rng)
+        await change_game(psudo_change_game)
     async def hw(message):
         global bot_reply
         bot_reply = 'Hello!'
@@ -156,7 +153,6 @@ async def reply_bot_message(message, command,regex = ''):
             channel = client.get_channel(message.channel.id)
             for i in range(len(cmd_list)):
                 megablock = megablock +'command: '+ str(cmd_list[i]['name'])+'\n description: '+str(cmd_list[i]['description'])+'\n trigger words: '+str(cmd_list[i]['trigger'])+'\n ------\n'
-                #await channel.send('command: '+ str(cmd_list[i]['name'])+'\n description: '+str(cmd_list[i]['description'])+'\n trigger words: '+str(cmd_list[i]['trigger']+'\n'))
             await channel.send(megablock)
         else:
             await message.reply('ask again in dms dummy im not flooding chat', mention_author=True)
@@ -172,8 +168,8 @@ async def reply_bot_message(message, command,regex = ''):
     else:
         if flag_scare == True:
                 bot_reply = roll_random_in_array(un_scared_response) + bot_reply
-                '''if debug == True:
-                    print("trip thank flag")'''
+                if debug == True:
+                    print("trip thank flag")
                 flag_scare = False
     if debug == True:
         print("tried sending message: -" + str(bot_reply) + '- with yell_flag: -' + str(flag_ping_user) +'-')
@@ -212,9 +208,8 @@ def get_bot_perms(message):
     #gets the channel obj, then gets the perms for the bot in the channel 
     return client.get_channel(message.channel.id).permissions_for(message.guild.me)
 
-#TODO switch over again to json
+
 async def cmd_builder():
-    #print(os.getcwd())
     global cmd_list
     global startup_statuses
     global scared_responses
