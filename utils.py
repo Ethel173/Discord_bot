@@ -12,5 +12,6 @@ def psudo_list_rng(list_a,str_t):
     res = [i for i in list_a if str_t not in i]
     return res
 
+
 if __name__ == "__main__":
     sys.exit(1)

@@ -1,6 +1,5 @@
-import csv
+import json
 from fileinput import close
-import os
 import re
 import sys
 import discord
@@ -22,9 +21,11 @@ cmd_list=[]
 flag_scare = False
 flag_ping_user = False
 #editable flavor text
-startup_statuses = ['crying over RNG','with the dev console','crashing this bot with no error logs','gao']
+startup_statuses = []
 startup_status_current = ''
-
+scared_responses = []
+un_scared_response = []
+RNG_like_dislike = []
 
 class bot_return_struct:
     def __init__(self, string, userflag):
@@ -35,31 +36,13 @@ class bot_return_struct:
     def rtr_flag(self):
         return self.userflag
 
-
-class command_no_promt_builder:
-    def __init__(self, cmd_name, cmd_payload, cmd_trigger, cmd_desc=''):
-        self.cmd_name = cmd_name
-        self.cmd_case = cmd_payload
-        self.cmd_trigger = cmd_trigger
-        self.cmd_desc = cmd_desc
-    def rtr_name(self):
-        return self.cmd_name
-    def rtr_payload(self):
-        return self.cmd_case
-    def rtr_trigger(self):
-        return self.cmd_trigger
-    def rtr_desc(self):
-        return self.cmd_desc
-
-
 class MyClient(discord.Client):
     async def on_ready(self):
         global startup_status_current
-        #build commands
-        cmd_builder()
         print('Logged in as = ' +str(self.user.name))
         print('with userid = ' + str(bot_id))
         print('------')
+        await cmd_builder()
         startup_status_current = roll_random_in_array(startup_statuses)
         await client.change_presence(status=discord.Status.online, activity=discord.Game(startup_status_current))
         if home_channel != False:
@@ -79,8 +62,9 @@ class MyClient(discord.Client):
         global startup_status_current
         #abort if cant send messages
         #bot_perms_in_channel = get_bot_perms(message)
-        if get_bot_perms(message).send_messages == False:
-            return
+        if message.channel.type.value != 1:
+            if get_bot_perms(message).send_messages == False:
+                return
         #debug
         if debug == True:
             print('caught message: {0.author}: {0.content}'.format(message))
@@ -88,21 +72,27 @@ class MyClient(discord.Client):
         #start logic
         #chat events that return a response
         for cmd in range(len(cmd_list)):
-            if type(cmd_list[cmd].rtr_trigger()) != list:
-                if re.match(cmd_list[cmd].rtr_trigger(),message.content.lower()):
-                    if get_bot_perms(message).send_messages == False:
-                        return
-                    p2 = reply_bot_message(message, cmd_list[cmd].rtr_payload())
+            alpha = cmd_list[cmd]
+            beta = alpha['trigger']
+            if type(beta) != list:
+                if re.match(cmd_list[cmd]['trigger'],message.content.lower()):
+                    if message.channel.type.value != 1:
+                        if get_bot_perms(message).send_messages == False:
+                            return
+                    p2 = await reply_bot_message(message, cmd_list[cmd]['payload'])
                     if p2 != False and p2.rtr_resp()!="":
                         await message.reply(p2.rtr_resp(), mention_author=p2.rtr_flag())
-                    break
+                    return False
             else:
-                for i in range(0,len(cmd_list[cmd].rtr_trigger())):
-                    if re.match(cmd_list[cmd].rtr_trigger()[i],message.content.lower()):
-                        p2 = reply_bot_message(message, cmd_list[cmd].rtr_payload(),cmd_list[cmd].rtr_trigger()[i])
+                for i in range(0,len(cmd_list[cmd]['trigger'])):
+                    if re.match(cmd_list[cmd]['trigger'][i],message.content.lower()):
+                        if message.channel.type.value != 1:
+                            if get_bot_perms(message).send_messages == False:
+                                return
+                        p2 = await reply_bot_message(message, cmd_list[cmd]['payload'],cmd_list[cmd]['trigger'][i])
                         if p2 != False and p2.rtr_resp()!="":
                             await message.reply(p2.rtr_resp(), mention_author=p2.rtr_flag())
-                        break
+                        return False
 
     async def on_message_delete(self,message):
         if message.author.id == bot_id:
@@ -113,7 +103,7 @@ class MyClient(discord.Client):
             await channel.send("i saw that")
 
 
-def reply_bot_message(message, command,regex = ''):
+async def reply_bot_message(message, command,regex = ''):
     global bot_reply
     global flag_scare
     global flag_ping_user
@@ -121,31 +111,30 @@ def reply_bot_message(message, command,regex = ''):
         print('processing {0.author}: {0.content} '.format(message))
     #clear it for new response
     bot_reply = ''
-    #make sure to add in the ' ' for proper formatting for below
-    scared_responses = ['Please stop yelling at me its scawwy but ','Loud Noises scawwy but ','AAAHH ','awwwww you made me spill my drink ']
-    un_scared_response = ['Thankies and ','thankuus ','ehe ']
-    RNG_like_dislike = ['i hate ','i love ','i dont really like ','i enjoy ']
     #disabled for next major rewrite
-    def change_game():
+    async def change_game():
         global bot_reply
         bot_reply = "im trying ok"
         psudo_rng = psudo_list_rng(startup_statuses,startup_status_current)
         psudo_change_game = roll_random_in_array(psudo_rng)
-        change_game(psudo_rng)
-    def hw():
+        await change_game(psudo_rng)
+    async def hw(message):
         global bot_reply
         bot_reply = 'Hello!'
-    def rng_like(message):
+    async def purge(message):
+        proc1 = message.content.lower().replace(command+' ','')
+        await mass_del(message,proc1)
+        channel = client.get_channel(message.channel.id)
+        await channel.send('deyeeted up to '+proc1+' messages \n idk im not counting')
+    async def rng_like(message):
         global bot_reply
         proc1 = message.content.lower().replace('hey gura what do you think of ','')
         bot_reply = roll_random_in_array(RNG_like_dislike) + proc1
-    def search(message):
+    async def search(message):
         global bot_reply
         proc1 = message.content.lower().replace(regex,'')
         bot_reply = 'https://www.google.com/search?q='+proc1.replace(' ','+')    
-    def purge(message):
-        mass_del(message.content.lower().replace('purge ',''), message)
-    def source(message):
+    async def source(message):
         global bot_reply
         if len(message.attachments) == 0:
             return False
@@ -157,7 +146,25 @@ def reply_bot_message(message, command,regex = ''):
             else:
                 hunt = str(message.attachments[i-1].url).replace('http://','').replace('https://','')
                 bot_reply = bot_reply + 'am dumm, so heres google\n' +'https://www.google.com/searchbyimage?image_url='+str(hunt)+'\n'
-    eval(command+"()")
+    async def reload(message):
+        global bot_reply
+        await cmd_builder()
+        bot_reply = 'done'
+    async def help(message):    
+        megablock = ''
+        if message.channel.type.value == 1:
+            channel = client.get_channel(message.channel.id)
+            for i in range(len(cmd_list)):
+                megablock = megablock +'command: '+ str(cmd_list[i]['name'])+'\n description: '+str(cmd_list[i]['description'])+'\n trigger words: '+str(cmd_list[i]['trigger'])+'\n ------\n'
+                #await channel.send('command: '+ str(cmd_list[i]['name'])+'\n description: '+str(cmd_list[i]['description'])+'\n trigger words: '+str(cmd_list[i]['trigger']+'\n'))
+            await channel.send(megablock)
+        else:
+            await message.reply('ask again in dms dummy im not flooding chat', mention_author=True)
+
+    
+    #fire subroutine
+    await eval(command+"(message)")
+    #handle yelling
     if message.content.isupper():
         bot_reply = roll_random_in_array(scared_responses) + bot_reply
         flag_ping_user = True
@@ -172,7 +179,7 @@ def reply_bot_message(message, command,regex = ''):
         print("tried sending message: -" + str(bot_reply) + '- with yell_flag: -' + str(flag_ping_user) +'-')
     return bot_return_struct(bot_reply, flag_ping_user)
 
-async def mass_del(number, message):
+async def mass_del(message,number):
     try:
         limit_a = int(number)
         if limit_a <= 1:
@@ -206,14 +213,22 @@ def get_bot_perms(message):
     return client.get_channel(message.channel.id).permissions_for(message.guild.me)
 
 #TODO switch over again to json
-def cmd_builder():
+async def cmd_builder():
     #print(os.getcwd())
-    with open("command_list.csv", "r") as workfile:
-        command_list_reader = csv.DictReader(workfile,fieldnames=['name','desc','payload','trigger'],restkey='trigger')
-        next(command_list_reader)
-        for row in command_list_reader:
-            t1 = command_no_promt_builder(cmd_name=row["name"],cmd_payload=row["payload"],cmd_desc=row["desc"],cmd_trigger=row['trigger'])
-            cmd_list.append(t1)
+    global cmd_list
+    global startup_statuses
+    global scared_responses
+    global un_scared_response
+    global RNG_like_dislike
+    with open("command_list.json", "r") as workfile:
+        command_list = json.load(workfile)
+        startup_statuses = command_list['statuses']
+        scared_responses = command_list['scared_responses']
+        un_scared_response = command_list['un_scared_response']
+        RNG_like_dislike = command_list['RNG_like_dislike']
+        for i in range(len(command_list['commands'])):
+            p1 = command_list['commands'][i]
+            cmd_list.append(p1)
         workfile.close()
 
 

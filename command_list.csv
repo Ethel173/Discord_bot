@@ -1,6 +1,0 @@
-name,desc,payload,trigger
-hello,replies back hello,hw,hello
-google search, standard google search,search,[there is a bug where this field is thrown away],googlefu ,can the internet tell me why ,explain to me 
-RNG like dislike,replies back if bot likes or dislikes message content,rng_like,hey gura what do you think of 
-source, replies back with a pixiv or google search for attached images,source,source me
-purge messages,blindly deletes X messages from being called, as long as the message is < 14 days old,purge,purge 

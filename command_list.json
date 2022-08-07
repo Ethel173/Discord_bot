@@ -1,47 +1,80 @@
-
- {   
+{
     "commands":[
-    {
-        "name":"hello",
-        "description":"replies back hello",
-        "payload":"hw",
-        "trigger":"hello"
-    },
-    {
-        "name":"google search",
-        "description":"standard google search,search",
-        "payload":"search",
-        "trigger":["googlefu ","can the internet tell me why ","explain to me "]
-    },
-    {
-        "name":"RNG like dislike",
-        "description":"replies back if bot likes or dislikes message content",
-        "payload":"rng_like",
-        "trigger":"hey gura what do you think of "
-    },
-    {
-        "name":"reverse image search",
-        "description":"replies back with a pixiv or google search for attached images",
-        "payload":"source",
-        "trigger":"source me"
-    },
-    {
-        "name":"purge messages",
-        "description":"blindly deletes X messages from being called, as long as the message is < 14 days old",
-        "payload":"purge",
-        "trigger":"purge "
-    },
-    {
-        "name":"change game",
-        "description":"change game displayed on bot profile",
-        "payload":"change_game",
-        "trigger":"gura change your game "
-    }
+       {
+          "name":"hello",
+          "description":"replies back hello",
+          "payload":"hw",
+          "trigger":"hello"
+       },
+       {
+          "name":"google search",
+          "description":"standard google search,search",
+          "payload":"search",
+          "trigger":[
+             "googlefu ",
+             "can the internet tell me why ",
+             "explain to me "
+          ]
+       },
+       {
+          "name":"RNG like dislike",
+          "description":"replies back if bot likes or dislikes message content",
+          "payload":"rng_like",
+          "trigger":"hey gura what do you think of "
+       },
+       {
+          "name":"reverse image search",
+          "description":"replies back with a pixiv or google search for attached images",
+          "payload":"source",
+          "trigger":"source me"
+       },
+       {
+          "name":"purge messages",
+          "description":"blindly deletes X messages from being called, as long as the message is < 14 days old",
+          "payload":"purge",
+          "trigger":"purge "
+       },
+       {
+          "name":"change game",
+          "description":"change game displayed on bot profile",
+          "payload":"change_game",
+          "trigger":"gura change your game"
+       },
+       {
+          "name":"reload commands",
+          "description":"reload commands",
+          "payload":"reload",
+          "trigger":"gura reload"
+       },
+       {
+          "name":"help",
+          "description":"sends all loaded commands",
+          "payload":"help",
+          "trigger":"gura help"
+       }
     ],
-    "statuses":["crying over RNG","with the dev console","crashing this bot with no error logs","gao"],
-    "personality":{
-        "scared_responses":["Please stop yelling at me its scawwy but ","Loud Noises scawwy but ","AAAHH ","awwwww you made me spill my drink "],
-        "un_scared_response": ["Thankies and ","thankuus ","ehe "],
-        "RNG_like_dislike" : ["i hate ","i love ","i dont really like ","i enjoy "]
-    }
-}
+    "statuses":[
+       "crying over RNG",
+       "with the dev console",
+       "crashing this bot with no error logs",
+       "gao",
+       "saving 15% on car insurance with geico"
+    ],
+    "scared_responses":[
+       "Please stop yelling at me its scawwy but ",
+       "Loud Noises scawwy but ",
+       "AAAHH ",
+       "awwwww you made me spill my drink "
+    ],
+    "un_scared_response":[
+       "Thankies and ",
+       "thankuus ",
+       "ehe "
+    ],
+    "RNG_like_dislike":[
+       "i hate ",
+       "i love ",
+       "i dont really like ",
+       "i enjoy "
+    ]
+ }
