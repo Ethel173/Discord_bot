@@ -64,7 +64,8 @@
        "Please stop yelling at me its scawwy but ",
        "Loud Noises scawwy but ",
        "AAAHH ",
-       "awwwww you made me spill my drink "
+       "awwwww you made me spill my drink ",
+       "im trying okay :( "
     ],
     "un_scared_response":[
        "Thankies and ",
@@ -76,5 +77,8 @@
        "i love ",
        "i dont really like ",
        "i enjoy "
+    ],
+    "insult":[
+        "dummy"
     ]
  }

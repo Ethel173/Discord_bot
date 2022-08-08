@@ -61,36 +61,27 @@ class MyClient(discord.Client):
             return
         global startup_status_current
         #abort if cant send messages
-        #bot_perms_in_channel = get_bot_perms(message)
         if message.channel.type.value != 1:
-            if get_bot_perms(message).send_messages == False:
+            if get_channel_perms(message, message.guild.me).send_messages == False:
                 return
         #debug
         if debug == True:
             print('caught message: {0.author}: {0.content}'.format(message))
 
-        #start logic
-        #chat events that return a response
+    #start logic
+    #chat events that return a response
         for cmd in range(len(cmd_list)):
+            p2 = False
             if type(cmd_list[cmd]['trigger']) != list:
                 if re.match(cmd_list[cmd]['trigger'],message.content.lower()):
-                    if message.channel.type.value != 1:
-                        if get_bot_perms(message).send_messages == False:
-                            return
                     p2 = await reply_bot_message(message, cmd_list[cmd]['payload'])
-                    if p2 != False and p2.rtr_resp()!="":
-                        await message.reply(p2.rtr_resp(), mention_author=p2.rtr_flag())
-                    return False
             else:
                 for i in range(0,len(cmd_list[cmd]['trigger'])):
                     if re.match(cmd_list[cmd]['trigger'][i],message.content.lower()):
-                        if message.channel.type.value != 1:
-                            if get_bot_perms(message).send_messages == False:
-                                return
                         p2 = await reply_bot_message(message, cmd_list[cmd]['payload'],cmd_list[cmd]['trigger'][i])
-                        if p2 != False and p2.rtr_resp()!="":
-                            await message.reply(p2.rtr_resp(), mention_author=p2.rtr_flag())
-                        return False
+            if p2 != False: 
+                if p2.rtr_resp()!="":
+                    await message.reply(p2.rtr_resp(), mention_author=p2.rtr_flag())
 
     async def on_message_delete(self,message):
         if message.author.id == bot_id:
@@ -101,6 +92,7 @@ class MyClient(discord.Client):
             await channel.send("i saw that")
 
 
+#message handler
 async def reply_bot_message(message, command,regex = ''):
     global bot_reply
     global flag_scare
@@ -109,7 +101,7 @@ async def reply_bot_message(message, command,regex = ''):
         print('processing {0.author}: {0.content} '.format(message))
     #clear it for new response
     bot_reply = ''
-    async def change_game():
+    async def game_roll(message):
         global bot_reply
         bot_reply = "im trying ok"
         psudo_rng = psudo_list_rng(startup_statuses,startup_status_current)
@@ -122,7 +114,7 @@ async def reply_bot_message(message, command,regex = ''):
         proc1 = message.content.lower().replace(command+' ','')
         await mass_del(message,proc1)
         channel = client.get_channel(message.channel.id)
-        await channel.send('deyeeted up to '+proc1+' messages \n idk im not counting')
+        return False
     async def rng_like(message):
         global bot_reply
         proc1 = message.content.lower().replace('hey gura what do you think of ','')
@@ -148,16 +140,19 @@ async def reply_bot_message(message, command,regex = ''):
         await cmd_builder()
         bot_reply = 'done'
     async def help(message):    
-        megablock = ''
         if message.channel.type.value == 1:
             channel = client.get_channel(message.channel.id)
             for i in range(len(cmd_list)):
+                megablock = ''
                 megablock = megablock +'command: '+ str(cmd_list[i]['name'])+'\n description: '+str(cmd_list[i]['description'])+'\n trigger words: '+str(cmd_list[i]['trigger'])+'\n ------\n'
-            await channel.send(megablock)
+                await channel.send(megablock)
+            await channel.send('i think thats it')
+            return False
         else:
-            await message.reply('ask again in dms dummy im not flooding chat', mention_author=True)
+            await message.reply('ask again in dms ' + str(roll_random_in_array(insults)) + ' im not flooding chat', mention_author=True)
 
-    
+
+
     #fire subroutine
     await eval(command+"(message)")
     #handle yelling
@@ -181,8 +176,8 @@ async def mass_del(message,number):
         if limit_a <= 1:
             raise TypeError
     except TypeError:
-            await message.reply('thats not a good number dummy, needs to be 2 or bigger', mention_author=1)
-            return
+            await message.reply('thats not a good number ' + str(roll_random_in_array(insults)),+ ' needs to be 2 or bigger', mention_author=1)
+            return False
     #DMS or private groups
     if message.channel.type.value == 1:
         async for A in message.channel.history(limit=limit_a):
@@ -190,13 +185,17 @@ async def mass_del(message,number):
                 await A.delete()
     else:
         #public channels
-        if get_bot_perms(message).manage_messages == False:
-            await message.reply('i dont have `manage messages` in here dummy', mention_author=True)
-            return
-        if message.author.guild_permissions.manage_messages == False:
-            await message.reply('you dont have `manage messages` in here dummy', mention_author=True)
-            return
-        await message.channel.purge(limit=limit_a)
+        #alpha = message.channel.permissions_for(message.guild.me)
+        if message.guild.me.permissions_in(message.channel).manage_messages == False:
+            await message.reply('i dont have `manage messages` in here ' + str(roll_random_in_array(insults)), mention_author=True)
+            return False
+        elif message.channel.permissions_for(message.author).manage_messages == False:
+        #if get_channel_perms(message, message.author).manage_messages == False:
+            await message.reply('you dont have `manage messages` in here ' + str(roll_random_in_array(insults)), mention_author=True)
+            return False
+        else:
+            await message.channel.purge(limit=limit_a)
+            await message.channel.send('deyeeted up to '+str(limit_a)+' messages \nidk im not counting')
 
 async def change_game(game):
     await client.change_presence(status=discord.Status.online, activity=discord.Game(game))
@@ -204,9 +203,9 @@ async def change_game(game):
 def unpack_keys(dict):
     return [*dict]
 
-def get_bot_perms(message):
+def get_channel_perms(message,user):
     #gets the channel obj, then gets the perms for the bot in the channel 
-    return client.get_channel(message.channel.id).permissions_for(message.guild.me)
+    return client.get_channel(message.channel.id).permissions_for(user)
 
 
 async def cmd_builder():
@@ -215,17 +214,18 @@ async def cmd_builder():
     global scared_responses
     global un_scared_response
     global RNG_like_dislike
-    with open("command_list.json", "r") as workfile:
+    global insults
+    with open("gamer_list.json", "r") as workfile:
         command_list = json.load(workfile)
         startup_statuses = command_list['statuses']
         scared_responses = command_list['scared_responses']
         un_scared_response = command_list['un_scared_response']
         RNG_like_dislike = command_list['RNG_like_dislike']
+        insults = command_list['insult']
         for i in range(len(command_list['commands'])):
             p1 = command_list['commands'][i]
             cmd_list.append(p1)
         workfile.close()
-
 
 client = MyClient()
 def starttime():
