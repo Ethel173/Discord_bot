@@ -12,6 +12,7 @@ bot_token = os.getenv('DISCORD_TOKEN')
 debug = os.getenv('DEBUG')
 home_channel = os.getenv('HOME_CHANNEL')
 home_guild = int(os.getenv('HOME_GUILD'))
+owner_id = int(os.getenv('OWNER_ID'))
 
 try:
     if home_channel == '':

@@ -4,3 +4,4 @@ DISCORD_TOKEN = <private key here>
 DEBUG = <True/False>
 HOME_CHANNEL = <a channel that the bot announces startup messages in, can be INT or empty>
 HOME_GUILD = <unused>
+OWNER_ID = <your ID for owner commands>

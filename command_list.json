@@ -4,52 +4,64 @@
           "name":"hello",
           "description":"replies back hello",
           "payload":"hw",
+          "hidden":"False",
           "trigger":"hello"
        },
        {
           "name":"google search",
           "description":"standard google search,search",
           "payload":"search",
+          "hidden":"False",
           "trigger":[
              "googlefu ",
              "can the internet tell me why ",
              "explain to me "
-          ]
+            ]
        },
        {
           "name":"RNG like dislike",
           "description":"replies back if bot likes or dislikes message content",
           "payload":"rng_like",
-          "trigger":"hey gura what do you think of "
+          "hidden":"False",
+          "trigger":[
+            "hey gura what do you think of ",
+            "gura what do you think of ",
+            "gura do you like ","gura do you hate "
+            ]
        },
        {
           "name":"reverse image search",
           "description":"replies back with a pixiv or google search for every attached image",
           "payload":"source",
+          "hidden":"False",
           "trigger":"source me"
        },
        {
           "name":"purge messages",
-          "description":"blindly deletes X messages (if it can), as long as the message is < 14 days old",
+          "description":"blindly deletes X messages (if it can), you need `manage messages`perms\nthe messages have to be < 14 days old\nbot cannot delete your message in DMs",
           "payload":"purge",
+          "hidden":"False",
           "trigger":"purge "
        },
        {
           "name":"change game",
           "description":"change game displayed on bot profile",
           "payload":"change_game",
+          "hidden":"True",
           "trigger":"gura change your game"
        },
        {
           "name":"reload commands",
           "description":"reload commands",
-          "payload":"reload",
+          "payload":"reload_everything",
+          "hidden":"True",
           "trigger":"gura reload"
        },
        {
           "name":"help",
           "description":"sends all loaded commands",
           "payload":"help",
+          "hidden":"False",
           "trigger":"gura help"
        }
     ],
@@ -61,24 +73,26 @@
        "saving 15% on car insurance with geico"
     ],
     "scared_responses":[
-       "Please stop yelling at me its scawwy but ",
-       "Loud Noises scawwy but ",
-       "AAAHH ",
-       "awwwww you made me spill my drink ",
-       "im trying okay :( "
+       "Please stop yelling at me its scawwy but",
+       "Loud Noises scawwy but",
+       "AAAHH",
+       "awwwww you made me spill my drink",
+       "im trying okay :("
     ],
     "un_scared_response":[
-       "Thankies and ",
-       "thankuus ",
-       "ehe "
+       "Thankies and",
+       "thankuus",
+       "ehe"
     ],
     "RNG_like_dislike":[
-       "i hate ",
-       "i love ",
-       "i dont really like ",
-       "i enjoy "
+       "i hate",
+       "i love",
+       "i dont really like",
+       "i enjoy"
     ],
     "insult":[
-        "dummy"
+        "dummy",
+        "bakka",
+        "stupid"
     ]
  }
