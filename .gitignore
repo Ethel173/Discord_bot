@@ -1,8 +1,7 @@
 .env
-clippy.txt
-test.py
-test_other.py
 __pycache__/
-sandbox.py
 rewrite_nextcord/
+sandbox.py
 sandbox2.py
+test.py
+clippy.txt

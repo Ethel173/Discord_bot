@@ -94,8 +94,8 @@ async def purge(message, command, regex = ''):
             try:
                 yeetcounter = await message.channel.purge(limit=limit_a)
                 await message.send('deyeeted {} message(s)'.format(len(yeetcounter)))
-            except discord.HTTPException:
-                await message.send('something happened with the network\n try again?')
+            except:
+                pass
 
 #rng like dislike
 async def rng_like(message, command, regex = ''):
@@ -127,10 +127,25 @@ async def source(message, command, regex = ''):
 async def help(message, command, regex = ''):    
     if message.channel.type.value == 1:
         channel = message.channel
-        for i in range(len(cmd_list)):
+        cmd_len = len(cmd_list)
+        block_counter = 0
+        block_chunker = 3
+        megablock = ''
+        for i in range(cmd_len):
+            if block_counter % block_chunker == 0:
+                megablock = ''
             if cmd_list[i]['hidden'] == 'False':
-                megablock = 'command: '+ str(cmd_list[i]['name'])+'\n description: '+str(cmd_list[i]['description'])+'\n trigger words: '+str(cmd_list[i]['trigger'])+'\n ------\n'
-                await channel.send(megablock)
+                block_counter += 1
+                megablock = megablock +'command: '+ str(cmd_list[i]['name'])+'\n description: '+str(cmd_list[i]['description'])+'\n trigger words: '+str(cmd_list[i]['trigger'])+'\n ------\n'
+                if block_counter % block_chunker == 0:
+                    await channel.send("```"+ megablock+"```")
+            elif message.author.id == owner_id:
+                block_counter += 1
+                megablock = megablock + '-ADMIN-: '+ str(cmd_list[i]['name'])+'\n description: '+str(cmd_list[i]['description'])+'\n trigger words: '+str(cmd_list[i]['trigger'])+'\n ------\n'
+                if block_counter %block_chunker == 0:
+                    await channel.send("```"+ megablock+"```")
+        if block_counter % block_chunker != 0:
+            await channel.send("```"+ megablock+"```")
         await channel.send('i think thats it')
         return
     else:
