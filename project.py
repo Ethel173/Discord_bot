@@ -13,14 +13,8 @@ def str_to_bool(s):
         return True
     elif s == 'False':
         return False
-    else:
-        sys.exit("invalid debug asisgnment in .env")
 debug_default = str_to_bool(debug)
 #globals
-flag_scare = False
-flag_ping_user = False
-no_dupe_logins = True
-current_status = ''
 
 #helper funcs
 def unpack_keys(dict):
@@ -42,21 +36,16 @@ if "pytest" not in sys.modules:
     import commands
 
     class MyClient(discord.Client):
-        global current_status
         async def on_ready(self):
             print('Logged in as = ' +str(self.user.name))
             print('with userid = ' + str(bot_id))
             print('------')
-            startup_status_current = roll_random_in_array(commands.startup_statuses)
-            await client.change_presence(status=discord.Status.online, activity=discord.Game(startup_status_current))
+            await commands.set_new_game(client)
             if home_channel != False:
                 ###DEBUG RIP ME OUT FOR RELEASE
                 if commands.debug_mode == True:
                     print('tried mentioning startup in channel :', client.get_channel(home_channel))
                 await client.get_channel(home_channel).send("bot online")
-            #needed to populate commands imported arrays
-            commands.status_current = startup_status_current
-            commands.mod_client = client
 
         async def on_message(self, message):
             #prevent replies and logging of bot messages
@@ -68,7 +57,7 @@ if "pytest" not in sys.modules:
 
             #abort if cant send messages in channel
             if message.channel.type.value != 1:
-                if message.channel.permissions_for(message.author).send_messages == False:
+                if message.channel.permissions_for(message.author).send_messages == None:
                     return
                 ###DEBUG RIP ME OUT FOR RELEASE
                 if commands.debug_mode == True:
@@ -77,17 +66,20 @@ if "pytest" not in sys.modules:
             #chat command event seeker
             for command_index in range(len(commands.cmd_list)):
                 if type(commands.cmd_list[command_index]['trigger']) != list:
+                    ###DEBUG RIP ME OUT FOR RELEASE
+                    if commands.debug_mode == True:
+                        print("trying to match: "+commands.cmd_list[command_index]['trigger'])
                     if re.match(commands.cmd_list[command_index]['trigger'],message.content.lower()):
-                        #pass current status
-                        #TODO find a better way to do this instead of every command
-                        commands.status_current = current_status
-                        await commands.pre_message_builder_and_caller(message, commands.cmd_list[command_index]['payload'],commands.cmd_list[command_index]['trigger'])
+                        extra_data = message.content.lower().replace(commands.cmd_list[command_index]['trigger'],'')
+                        await commands.pre_message_builder_and_caller(client, message, commands.cmd_list[command_index]['payload'],extra_data)
                 else:
                     for trigger_index in range(0,len(commands.cmd_list[command_index]['trigger'])):
+                        ###DEBUG RIP ME OUT FOR RELEASE
+                        if commands.debug_mode == True:
+                            print("trying to match: "+commands.cmd_list[command_index]['trigger'][trigger_index])
                         if re.match(commands.cmd_list[command_index]['trigger'][trigger_index],message.content.lower()):
-                            #TODO same here
-                            commands.status_current = current_status
-                            await commands.pre_message_builder_and_caller(message, commands.cmd_list[command_index]['payload'],commands.cmd_list[command_index]['trigger'][trigger_index])
+                            extra_data = message.content.lower().replace(str(commands.cmd_list[command_index]['trigger'][trigger_index]),'')
+                            await commands.pre_message_builder_and_caller(client, message, commands.cmd_list[command_index]['payload'],extra_data)
 
         async def on_message_delete(self,message):
             if message.author.id == bot_id:
@@ -98,31 +90,18 @@ if "pytest" not in sys.modules:
                 await channel.send("i saw that")
 
     ###reload function
-    async def reload(message):
+    async def reload_commands(message):
         #reload the file
         importlib.reload(commands)
-        #load things from json
-        commands.personality_builder()
-        #reset the current status since its null
-        commands.status_current = current_status
-        #reset the client obj status since its null
-        commands.mod_client = client
+        #populate the variables
+        commands.commands_data_loader()
         await message.reply(roll_random_in_array(commands.admin_success))
-
-    #initial set command file variables
-    def populate_commands():
-        commands.personality_builder()
-
 
     client = MyClient()
     def starttime():
-        global no_dupe_logins
-        if no_dupe_logins == True:
-            no_dupe_logins = False
-            populate_commands()
-            client.run(bot_token)
-        else:
-            print('ERROR PREVENTED\n---\nsupressed a duplicate login attempt')
+        #initial set command file variables
+        commands.commands_data_loader()
+        client.run(bot_token)
 
 
     if __name__ == "__main__":

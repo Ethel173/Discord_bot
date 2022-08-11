@@ -48,12 +48,12 @@
           "description":"change game displayed on bot profile",
           "payload":"game_roll",
           "hidden":"True",
-          "trigger":"gura change your game"
+          "trigger":"gura change game"
        },
        {
           "name":"reload commands",
           "description":"reload commands",
-          "payload":"reload_everything",
+          "payload":"reload_cmds",
           "hidden":"True",
           "trigger":"gura reload"
        },
@@ -62,7 +62,14 @@
           "description":"sends all loaded commands",
           "payload":"help",
           "hidden":"False",
-          "trigger":"gura help"
+          "trigger":["gura help","help"]
+       },
+       {
+          "name":"change debug flag",
+          "description":"change debug flag during runtime",
+          "payload":"c_db_flag",
+          "hidden":"True",
+          "trigger":["gura debug"]
        }
     ],
     "statuses":[
